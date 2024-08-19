@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: new-server-deployment  # Deployment name
+spec:
+  replicas: 2  
+  selector:
+    matchLabels:
+      app: new-server  # Label selector
+  template:
+    metadata:
+      labels:
+        app: new-server  # Pod label
+    spec:
+      containers:
+      - name: new-server  # Container name
+        image: samay0001/loadb:latest  # Container image
+        imagePullPolicy: IfNotPresent  # Image pull policy
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  # Environment variable reference
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "0.5"
+            memory: "256Mi"
+        ports:
+        - containerPort: 3000  # Container port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: new-server-service  # Service name
+spec:
+  selector:
+    app: new-server  # Label selector
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 30090  # NodePort
+  type: NodePort
